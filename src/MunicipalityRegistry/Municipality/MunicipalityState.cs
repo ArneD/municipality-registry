@@ -51,6 +51,8 @@ namespace MunicipalityRegistry.Municipality
 
             Register<MunicipalityWasImportedFromCrab>(@event => WhenCrabEventApplied());
             Register<MunicipalityNameWasImportedFromCrab>(@event => WhenCrabEventApplied());
+
+            Register<MunicipalitySnapshot>(When);
         }
 
         private void WhenCrabEventApplied()
@@ -163,6 +165,23 @@ namespace MunicipalityRegistry.Municipality
         private void When(MunicipalityWasCorrectedToCurrent @event)
         {
             _status = MunicipalityStatus.Current;
+        }
+
+        private void When(MunicipalitySnapshot snapshot)
+        {
+            _municipalityId = new MunicipalityId(snapshot.MunicipalityId);
+            _nisCode = new NisCode(snapshot.NisCode);
+            _status = snapshot.Status;
+
+            foreach (var name in snapshot.Names)
+                _names.Add(name.Key, new MunicipalityName(name.Value, name.Key));
+
+            _officialLanguages.AddRange(snapshot.OfficialLanguages);
+            _facilitiesLanguages.AddRange(snapshot.FacilitiesLanguages);
+
+            _geometry = new ExtendedWkbGeometry(snapshot.Geometry.ToByteArray());
+
+            LastModificationBasedOnCrab = snapshot.LastModificationBasedOnCrab;
         }
     }
 }

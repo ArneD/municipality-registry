@@ -4,6 +4,7 @@ namespace MunicipalityRegistry.Municipality
     using System.Collections.Generic;
     using System.Linq;
     using Be.Vlaanderen.Basisregisters.AggregateSource;
+    using Be.Vlaanderen.Basisregisters.AggregateSource.Snapshotting;
     using Be.Vlaanderen.Basisregisters.Crab;
     using Events;
     using NetTopologySuite;
@@ -12,7 +13,7 @@ namespace MunicipalityRegistry.Municipality
     using NetTopologySuite.IO;
     using NodaTime;
 
-    public partial class Municipality : AggregateRootEntity
+    public partial class Municipality : AggregateRootEntity, ISnapshotable
     {
         public static readonly Func<Municipality> Factory = () => new Municipality();
 
@@ -275,5 +276,20 @@ namespace MunicipalityRegistry.Municipality
 
             // We dont care if it didnt change
         }
+
+        public object TakeSnapshot()
+        {
+            return new MunicipalitySnapshot(
+                _municipalityId,
+                _nisCode,
+                _status,
+                _names,
+                _officialLanguages,
+                _facilitiesLanguages,
+                _geometry,
+                LastModificationBasedOnCrab);
+        }
+
+        public ISnapshotStrategy Strategy => IntervalStrategy.SnapshotEvery(2);
     }
 }
