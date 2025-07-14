@@ -190,6 +190,13 @@ namespace MunicipalityRegistry.Projections.Legacy.MunicipalityDetail
                     ct);
             });
 
+            When<Envelope<MunicipalityWasRemoved>>(async (context, message, ct) =>
+            {
+                var municipality = await context.MunicipalityDetail.FindAsync(message.Message.MunicipalityId, cancellationToken: ct);
+                if (municipality != null)
+                    context.MunicipalityDetail.Remove(municipality);
+            });
+
             When<Envelope<MunicipalityGeometryWasCleared>>(async (context, message, ct) => DoNothing());
             When<Envelope<MunicipalityGeometryWasCorrected>>(async (context, message, ct) => DoNothing());
             When<Envelope<MunicipalityGeometryWasCorrectedToCleared>>(async (context, message, ct) => DoNothing());

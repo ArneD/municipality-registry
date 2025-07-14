@@ -18,6 +18,7 @@ namespace MunicipalityRegistry.Municipality
 
         private bool IsRetired => _status == MunicipalityStatus.Retired;
         private bool IsCurrent => _status == MunicipalityStatus.Current;
+        private bool IsRemoved => _isRemoved;
 
         public static Municipality Register(MunicipalityId id, NisCode nisCode)
         {
@@ -60,6 +61,11 @@ namespace MunicipalityRegistry.Municipality
         public void Retire(RetirementDate date)
         {
             ApplyChange(new MunicipalityWasRetired(_municipalityId, date));
+        }
+
+        public void Remove()
+        {
+            ApplyChange(new MunicipalityWasRemoved(_municipalityId));
         }
 
         public void ImportFromCrab(

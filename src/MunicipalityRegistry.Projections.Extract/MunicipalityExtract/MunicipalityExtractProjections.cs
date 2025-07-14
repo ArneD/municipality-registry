@@ -188,6 +188,13 @@ namespace MunicipalityRegistry.Projections.Extract.MunicipalityExtract
                     ct);
             });
 
+            When<Envelope<MunicipalityWasRemoved>>(async (context, message, ct) =>
+            {
+                var municipality = await context.MunicipalityExtract.FindAsync(message.Message.MunicipalityId, cancellationToken: ct);
+                if (municipality != null)
+                    context.MunicipalityExtract.Remove(municipality);
+            });
+
             When<Envelope<MunicipalityFacilitiesLanguageWasAdded>>(async (context, message, ct) => DoNothing());
             When<Envelope<MunicipalityFacilitiesLanguageWasRemoved>>(async (context, message, ct) => DoNothing());
             When<Envelope<MunicipalityGeometryWasCleared>>(async (context, message, ct) => DoNothing());

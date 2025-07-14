@@ -236,6 +236,30 @@ namespace MunicipalityRegistry.Projections.Legacy.Tests
                 })
                 .Assert();
         }
+
+        [Fact]
+        public async Task Given_MunicipalityWasRemoved_Then_item_is_deleted()
+        {
+            var projection = new MunicipalityListProjections();
+            var resolver = ConcurrentResolve.WhenEqualToHandlerMessageType(projection.Handlers);
+
+            var municipalityId = new MunicipalityId(Guid.NewGuid());
+            var municipalityWasRegistered = new MunicipalityWasRegistered(municipalityId, new NisCode("100"));
+            ((ISetProvenance)municipalityWasRegistered).SetProvenance(_provenance);
+
+            var municipalityWasRemoved = new MunicipalityWasRemoved(municipalityId);
+            ((ISetProvenance)municipalityWasRemoved).SetProvenance(_provenance);
+
+            await new ConnectedProjectionScenario<LegacyContext>(resolver)
+                .Given(
+                    new Envelope<MunicipalityWasRegistered>(new Envelope(municipalityWasRegistered, EmptyMetadata)),
+                    new Envelope<MunicipalityWasRemoved>(new Envelope(municipalityWasRemoved, EmptyMetadata)))
+                .Verify(async context =>
+                    !await context.MunicipalityList.AnyAsync(a => a.MunicipalityId == (Guid)municipalityId)
+                        ? VerificationResult.Pass()
+                        : VerificationResult.Fail())
+                .Assert();
+        }
     }
 
     public static class ConnectedProjectionTestSpecificationExtensions

@@ -20,10 +20,13 @@ namespace MunicipalityRegistry.Municipality
 
         private ExtendedWkbGeometry _geometry;
 
+        private bool _isRemoved;
+
         public Modification LastModificationBasedOnCrab { get; private set; }
 
         private Municipality()
         {
+            _isRemoved = false;
             Register<MunicipalityWasRegistered>(When);
             Register<MunicipalityNisCodeWasDefined>(When);
             Register<MunicipalityNisCodeWasCorrected>(When);
@@ -48,6 +51,7 @@ namespace MunicipalityRegistry.Municipality
             Register<MunicipalityWasCorrectedToCurrent>(When);
             Register<MunicipalityWasRetired>(When);
             Register<MunicipalityWasCorrectedToRetired>(When);
+            Register<MunicipalityWasRemoved>(When);
 
             Register<MunicipalityWasImportedFromCrab>(@event => WhenCrabEventApplied());
             Register<MunicipalityNameWasImportedFromCrab>(@event => WhenCrabEventApplied());
@@ -163,6 +167,12 @@ namespace MunicipalityRegistry.Municipality
         private void When(MunicipalityWasCorrectedToCurrent @event)
         {
             _status = MunicipalityStatus.Current;
+        }
+
+        private void When(MunicipalityWasRemoved @event)
+        {
+            _municipalityId = new MunicipalityId(@event.MunicipalityId);
+            _isRemoved = true;
         }
     }
 }
